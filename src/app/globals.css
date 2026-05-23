@@ -1,0 +1,417 @@
+@tailwind base;
+
+@layer base {
+  :root {
+    /* Default sidebar width values that will be overridden during resizing */
+    --sidebar-width: 240px;
+    --right-sidebar-width: 450px; /* Default - will be overridden by localStorage values */
+    --phone-sidebar-width: 400px; /* Default phone sidebar width */
+  }
+  
+  /* Apply transition only when not actively resizing for smooth animations between states */
+  aside:not(.resizing) {
+    transition: width 0.2s ease-out;
+  }
+
+  /* Prevent transitions during initial load */
+  body.initial-load .right-sidebar-component {
+    transition: none !important;
+  }
+
+  /* Prevent layout shifts during initial load for all elements */
+  body.initial-load * {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Hide phone iframe content during initial scale calculation to prevent flash */
+  body.initial-load .phone-iframe-content,
+  .phone-iframe-content:not(.scale-calculated) {
+    opacity: 0 !important;
+  }
+
+  /* Show content after scale is calculated */
+  .phone-iframe-content.scale-calculated {
+    opacity: 1;
+    transition: opacity 0.2s ease-in;
+  }
+
+  /* Attempt to hide scrollbar buttons on html/body by default */
+  html::-webkit-scrollbar-button,
+  body::-webkit-scrollbar-button {
+    display: none !important;
+  }
+}
+
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Scrollbar Styles - General */
+::-webkit-scrollbar {
+  width: 10px; /* Adjust thickness as needed */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Or a very dark color like #101010 if you want a subtle track */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cccccc; /* Whiter/light gray color for the thumb */
+  border-radius: 10px;
+  border: 2px solid transparent; /* Optional: creates a bit of padding around the thumb */
+  background-clip: content-box; /* Ensures border doesn't make thumb look thinner */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #a0a0a0; /* Slightly darker on hover */
+}
+
+/* THESE STYLES WILL BE MOVED TO A SPECIFIC CLASS LATER IF THIS WORKS */
+/*
+::-webkit-scrollbar-button {
+  display: block !important; 
+  height: 16px; 
+  width: 10px; 
+  background-color: #18181b; 
+  border: none;
+  -webkit-appearance: none; 
+  appearance: none; 
+}
+
+::-webkit-scrollbar-button:vertical:start {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M5 1 L2 4 Q2 4.5 2.5 4.5 L7.5 4.5 Q8 4.5 8 4 L5 1 Z' fill='%23cccccc'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+::-webkit-scrollbar-button:vertical:end {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M5 5 L2 2 Q2 1.5 2.5 1.5 L7.5 1.5 Q8 1.5 8 2 L5 5 Z' fill='%23cccccc'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+::-webkit-scrollbar-button:hover {
+  background-color: #27272a; 
+}
+
+::-webkit-scrollbar-button:vertical:start:hover,
+::-webkit-scrollbar-button:vertical:end:hover {
+  background-color: #27272a;
+}
+*/
+
+/* This rule should be general for any .custom-scrollbar element if needed */
+.custom-scrollbar::-webkit-scrollbar-button {
+    display: block !important; /* Ensure buttons show if this class is used */
+     height: 16px; 
+    width: 10px; 
+    background-color: #18181b; 
+    border: none;
+    -webkit-appearance: none; 
+    appearance: none; 
+    /* Add arrow SVGs here if .custom-scrollbar is the primary target */
+}
+
+.custom-scrollbar::-webkit-scrollbar-button:vertical:start {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M5 1 L2 4 Q2 4.5 2.5 4.5 L7.5 4.5 Q8 4.5 8 4 L5 1 Z' fill='%23cccccc'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button:vertical:end {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M5 5 L2 2 Q2 1.5 2.5 1.5 L7.5 1.5 Q8 1.5 8 2 L5 5 Z' fill='%23cccccc'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button:hover {
+  background-color: #27272a; 
+}
+
+.custom-scrollbar::-webkit-scrollbar-button:vertical:start:hover,
+.custom-scrollbar::-webkit-scrollbar-button:vertical:end:hover {
+  background-color: #27272a;
+}
+
+
+/* For Firefox (limited customization) */
+.custom-scrollbar {
+  scrollbar-width: auto; /* "auto" or "thin" - Changed to auto */
+  scrollbar-color: #555 transparent; /* thumb track */
+}
+
+/* Input Autofill Styles */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    /* Use a large inset box shadow to override the default autofill background */
+    box-shadow: inset 0 0 0 1000px theme('colors.custom-darker') !important; 
+    /* Ensure the text color remains white */
+    -webkit-text-fill-color: white !important;
+    /* Add a long transition delay for background-color to prevent flash */
+    transition: background-color 5000s ease-in-out 0s !important;
+    /* Optional: Prevent border changes if needed */
+    /* border: 1px solid theme('colors.gray.600') !important; */ 
+    /* Optional: Caret color if needed */
+    /* caret-color: white !important; */
+}
+
+/* Specifically target password fields if necessary for caret color, etc. */
+input[type="password"]:-webkit-autofill {
+  /* caret-color: white !important; */ 
+}
+
+/* Custom Cursor */
+.cursor-dartivo {
+  /* Assumes dartivo_cursor.png is in the public directory */
+  cursor: url('/dartivo_cursor.png'), auto;
+}
+
+/* Subtle Orbit Animation Keyframes - Increased Movement MORE */
+@keyframes subtle-orbit {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(12px, 6px); } /* Increased MORE */
+  40% { transform: translate(18px, -6px); } /* Increased MORE */
+  60% { transform: translate(6px, -12px); } /* Increased MORE */
+  80% { transform: translate(-12px, -6px); } /* Increased MORE */
+  100% { transform: translate(0, 0); }
+}
+
+/* Very Subtle Orbit Animation Keyframes */
+@keyframes very-subtle-orbit {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(2px, 1px); } /* Smaller values */
+  40% { transform: translate(3px, -1px); } /* Smaller values */
+  60% { transform: translate(1px, -2px); } /* Smaller values */
+  80% { transform: translate(-2px, -1px); } /* Smaller values */
+  100% { transform: translate(0, 0); }
+}
+
+/* Breathing Dot Animation - Added */
+@layer utilities {
+  @keyframes breathing {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.4);
+      opacity: 1;
+    }
+  }
+
+  .animate-breathing {
+    animation: breathing 1.7s ease-in-out infinite;
+  }
+}
+
+/* Existing styles */
+body {
+  font-family: 'Poppins', sans-serif;
+  /* Apply dark mode colors by default */
+  background-color: #18181b; /* Zinc 900 */
+  color: #d4d4d8; /* Zinc 300 */
+}
+
+/* Custom font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Remove focus outline globally or selectively */
+*:focus {
+  outline: none;
+}
+
+/* Custom class for scrollbars if needed more selectively */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px; /* Reduced width */
+  height: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  /* Adjust gradient stop for slightly thinner scrollbar */
+  background: linear-gradient(to right, transparent 6px, #181818 6px);
+  border-radius: 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #27272a; /* Much darker Zinc 800 */
+  border-radius: 5px;
+  border: none;
+  background-clip: initial;
+  opacity: 0.6; /* Make it softer/more transparent */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #3f3f46; /* Slightly lighter on hover (Zinc 700) */
+  opacity: 0.8; /* Less transparent on hover */
+}
+
+/* Styles for specific components */
+.chat-input:focus {
+  box-shadow: none;
+  border-color: #3b82f6; /* Example focus color */
+}
+
+/* Sidebar resize transition (disable during drag) */
+.right-sidebar {
+    transition: width 0.2s ease-out;
+    will-change: width;
+}
+.right-sidebar.resizing {
+    transition: none;
+}
+
+.left-sidebar {
+  transition: width 0.2s ease-out;
+  /* Remove will-change: width here as it might not be needed for left fixed sidebar */
+}
+
+.left-sidebar.resizing {
+  transition: none;
+}
+
+.phone-sidebar {
+  transition: width 0.2s ease-out;
+}
+.phone-sidebar.resizing {
+  transition: none;
+}
+
+/* Keyframes for breathing animation */
+@keyframes breathing {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+.animate-breathing {
+  animation: breathing 2s ease-in-out infinite;
+}
+
+/* Monaco Editor Diff Highlighting Styles */
+.diff-line-added {
+  background-color: rgba(34, 197, 94, 0.08) !important; /* Modern soft green */
+  border-left: 3px solid rgba(34, 197, 94, 0.6) !important; /* Softer border */
+  animation: highlight-pulse-green 2s ease-in-out 2; /* Only 2 cycles */
+}
+
+.diff-line-deleted {
+  background-color: rgba(239, 68, 68, 0.08) !important; /* Modern soft red */
+  border-left: 3px solid rgba(239, 68, 68, 0.6) !important; /* Softer border */
+  animation: highlight-pulse-red 2s ease-in-out 2; /* Only 2 cycles */
+}
+
+/* Disable modified line highlighting - user only wants + and - symbols */
+/*
+.diff-line-modified {
+  background-color: rgba(187, 128, 9, 0.3) !important;
+  border-left: 4px solid #bb8009 !important;
+  animation: highlight-pulse-yellow 2s ease-in-out 2;
+}
+*/
+
+.diff-glyph-added::before {
+  content: '+';
+  color: rgba(34, 197, 94, 0.9); /* Modern green with slight transparency */
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+  text-shadow: 0 0 2px rgba(34, 197, 94, 0.3);
+}
+
+.diff-glyph-deleted::before {
+  content: '-';
+  color: rgba(239, 68, 68, 0.9); /* Modern red with slight transparency */
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+  text-shadow: 0 0 2px rgba(239, 68, 68, 0.3);
+}
+
+/* Disable modified glyph - user only wants + and - symbols */
+/*
+.diff-glyph-modified::before {
+  content: '~';
+  color: #bb8009;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+  text-shadow: 0 0 2px rgba(187, 128, 9, 0.5);
+}
+*/
+
+/* Ensure glyph margin is visible */
+.monaco-editor .margin-view-overlays .glyph-margin {
+  width: 20px !important;
+}
+
+/* Enhanced pulse animations for diff highlighting */
+@keyframes highlight-pulse-green {
+  0%, 100% {
+    background-color: rgba(34, 197, 94, 0.08);
+    border-left-color: rgba(34, 197, 94, 0.6);
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.12);
+    border-left-color: rgba(34, 197, 94, 0.8);
+  }
+}
+
+@keyframes highlight-pulse-red {
+  0%, 100% {
+    background-color: rgba(239, 68, 68, 0.08);
+    border-left-color: rgba(239, 68, 68, 0.6);
+  }
+  50% {
+    background-color: rgba(239, 68, 68, 0.12);
+    border-left-color: rgba(239, 68, 68, 0.8);
+  }
+}
+
+/* Disable yellow animation - not using modified highlighting */
+/*
+@keyframes highlight-pulse-yellow {
+  0%, 100% {
+    background-color: rgba(187, 128, 9, 0.3);
+    border-left-color: #bb8009;
+  }
+  50% {
+    background-color: rgba(187, 128, 9, 0.4);
+    border-left-color: #bb8009;
+  }
+}
+*/
+
+/* Recently edited file highlighting */
+.recently-edited-line {
+  background-color: rgba(34, 197, 94, 0.1) !important;
+  border-left: 2px solid #22c55e !important;
+  animation: pulse-green 2s ease-in-out;
+}
+
+.recently-edited-glyph::before {
+  content: '✨';
+  color: #22c55e;
+  font-size: 12px;
+  line-height: 1;
+}
+
+@keyframes pulse-green {
+  0%, 100% {
+    background-color: rgba(34, 197, 94, 0.1);
+    border-left-color: #22c55e;
+  }
+  50% {
+    background-color: rgba(34, 197, 94, 0.2);
+    border-left-color: #16a34a;
+  }
+}
+/* Shimmer animation for QR code placeholder */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-12deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-12deg);
+  }
+}

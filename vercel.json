@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/__/auth/:path*",
+      "destination": "https://uncursored-e2f36.firebaseapp.com/__/auth/:path*"
+    }
+  ]
+} 
