@@ -1,0 +1,59 @@
+# cloudbuild.yaml (for Flutter Web)
+steps:
+  # 1. Download Flutter source code from GCS
+  # $_PROJECT_ID and $_GCS_BUCKET_NAME will be passed in as substitutions
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - '-c'
+      - |
+        echo "Downloading source from gs://${_GCS_BUCKET_NAME}/projects/${_PROJECT_ID}/files/ to ./source_files"
+        gsutil -m cp -r "gs://${_GCS_BUCKET_NAME}/projects/${_PROJECT_ID}/files/"* ./source_files/ || \\
+        echo "Warning: Failed to download source files. Directory might be empty or inaccessible."
+    entrypoint: 'bash'
+    id: 'download-source'
+
+  # --- Flutter Build Steps ---
+  # Use a builder image that has Flutter SDK installed.
+  # Using cirrusci/flutter image which is common, specify a version if needed e.g., cirrusci/flutter:3.19.0
+  # 2. Get dependencies
+  - name: 'cirrusci/flutter:latest' 
+    args: ['flutter', 'pub', 'get']
+    dir: 'source_files' # Run flutter commands inside the downloaded source directory
+    id: 'flutter-pub-get'
+    waitFor: ['download-source']
+
+  # 3. Build the web application
+  - name: 'cirrusci/flutter:latest'
+    args: ['flutter', 'build', 'web', '--release']
+    dir: 'source_files' # Run flutter commands inside the downloaded source directory
+    id: 'flutter-build-web'
+    waitFor: ['flutter-pub-get']
+
+  # 4. Upload the build output (from source_files/build/web) back to GCS
+  # Upload contents of build/web/* to the destination projects/{_PROJECT_ID}/build/ folder.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - '-c'
+      - |
+        if [ -d "source_files/build/web" ]; then
+          echo "Uploading build output from source_files/build/web/ to gs://${_GCS_BUCKET_NAME}/projects/${_PROJECT_ID}/build/"
+          gsutil -m cp -r source_files/build/web/* "gs://${_GCS_BUCKET_NAME}/projects/${_PROJECT_ID}/build/"
+        else
+          echo "Warning: Build directory 'source_files/build/web' not found. Skipping upload."
+          # Optionally exit with error: exit 1
+        fi
+    entrypoint: 'bash'
+    id: 'upload-build'
+    waitFor: ['flutter-build-web']
+
+# Define substitutions that the API call will provide
+substitutions:
+  _PROJECT_ID: 'default-project-id' # Default value, will be overridden by API call
+  _GCS_BUCKET_NAME: 'default-bucket-name' # Default value, will be overridden by API call
+
+# Optional: Specify timeout for the build (Flutter builds can take longer)
+timeout: '1800s' # 30 minutes
+
+# Optional: Specify machine type (Flutter builds can be resource intensive)
+# options:
+#  machineType: 'E2_HIGHCPU_8' # Example: 8 vCPU Highcpu machine 
